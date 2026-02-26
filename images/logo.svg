@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="wb_grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff4d8d"/>
+      <stop offset="50%" stop-color="#a64dff"/>
+      <stop offset="100%" stop-color="#5f8cff"/>
+    </linearGradient>
+
+    <!-- Мягкое премиальное свечение: не неон, а лёгкий туман -->
+    <filter id="wb_glow" x="-30%" y="-80%" width="160%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 0 0 0.35 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Сам текст -->
+  <g filter="url(#wb_glow)">
+    <text x="50%" y="52%"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          fill="url(#wb_grad)"
+          font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif"
+          font-weight="900"
+          font-size="108"
+          letter-spacing="6">
+      WILDBERRIES
+    </text>
+  </g>
+</svg>
