@@ -488,10 +488,10 @@ const WheelRenderer = {
 
   init(canvas, segments) {
     this.canvas = canvas;
-    this.ctx    = canvas.getContext('2d');
+    this.ctx    = canvas.getContext('2d', { alpha: true });
     this.segs   = segments;
     this._resize();
-    this._preload();
+    /* Иконки в колесе не используются — _preload() не вызываем */
     this.draw(this.angle);
   },
 
@@ -531,6 +531,9 @@ const WheelRenderer = {
     });
   },
 
+  /* флаг: вращается ли колесо сейчас (снижает качество для 60fps) */
+  spinning: false,
+
   draw(angle) {
     this.angle = angle;
     const ctx  = this.ctx;
@@ -547,6 +550,9 @@ const WheelRenderer = {
     const slice = (2 * Math.PI) / n;
     const base  = angle - Math.PI / 2;   // указатель на 12 часов
 
+    /* ── Во время вращения отключаем тяжёлые эффекты для 60fps ── */
+    const isSpinning = this.spinning;
+
     for (let i = 0; i < n; i++) {
       const seg = this.segs[i];
       const rc  = RARITY[seg.rarity];
@@ -554,87 +560,79 @@ const WheelRenderer = {
       const ea  = sa + slice;
       const mid = sa + slice / 2;
 
-      /* Градиент сектора */
-      const grd = ctx.createRadialGradient(cx, cy, R * 0.06, cx, cy, R);
-      grd.addColorStop(0,    rc.fillDark);
-      grd.addColorStop(0.42, rc.fillLight);
-      grd.addColorStop(1,    rc.fillDark);
-
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.arc(cx, cy, R, sa, ea);
-      ctx.closePath();
-      ctx.fillStyle = grd;
-      ctx.fill();
+      /* ── Градиент сектора ───────────────────────────────── */
+      /* Во время вращения используем плоский цвет — экономим GPU */
+      if (isSpinning) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, sa, ea);
+        ctx.closePath();
+        ctx.fillStyle = rc.fillLight;
+        ctx.fill();
+      } else {
+        const grd = ctx.createRadialGradient(cx, cy, R * 0.06, cx, cy, R);
+        grd.addColorStop(0,    rc.fillDark);
+        grd.addColorStop(0.42, rc.fillLight);
+        grd.addColorStop(1,    rc.fillDark);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, R, sa, ea);
+        ctx.closePath();
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
 
       ctx.strokeStyle = rc.strokeColor;
       ctx.lineWidth   = 1;
       ctx.stroke();
 
-      /* Текст + иконка */
+      /* ── Только текст, без иконок ───────────────────────── */
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(mid);
 
-      const img      = this.imgs[seg.image];
-      const iconSize = Math.max(14, Math.min(R * 0.15, 28));
-      const iconDist = R * 0.60;
-
-      /* ── Иконка с glow по редкости ─────────────────────── */
-      if (img && img !== 'loading') {
-        /* Glow-тень перед отрисовкой иконки */
-        if (seg.rarity === 'legendary') {
-          ctx.shadowColor = 'rgba(212,168,50,0.82)';
-          ctx.shadowBlur  = iconSize * 0.85;
-        } else if (seg.rarity === 'rare') {
-          ctx.shadowColor = 'rgba(157,127,232,0.72)';
-          ctx.shadowBlur  = iconSize * 0.65;
-        } else {
-          ctx.shadowColor = 'rgba(139,146,165,0.28)';
-          ctx.shadowBlur  = iconSize * 0.25;
-        }
-        ctx.drawImage(img, iconDist - iconSize / 2, -iconSize / 2, iconSize, iconSize);
-        ctx.shadowBlur  = 0;
-        ctx.shadowColor = 'transparent';
-      } else {
-        /* Fallback — цветной прямоугольник с мягким glow */
-        ctx.shadowColor = rc.glowColor;
-        ctx.shadowBlur  = seg.rarity === 'legendary' ? 10 : seg.rarity === 'rare' ? 7 : 3;
+      /* Полоска-акцент редкости у края (вместо иконки) */
+      if (!isSpinning) {
+        const stripW = Math.max(3, R * 0.028);
+        const stripH = Math.max(12, R * 0.13);
+        const stripX = R * 0.86;
         ctx.fillStyle   = rc.accent;
-        ctx.globalAlpha = 0.55;
-        /* Скруглённый прямоугольник */
-        const bx = iconDist - iconSize / 2;
-        const by = -iconSize * 0.35;
-        const bw = iconSize;
-        const bh = iconSize * 0.7;
-        const br = 3;
+        ctx.globalAlpha = 0.75;
+        if (seg.rarity !== 'common') {
+          ctx.shadowColor = rc.glowColor;
+          ctx.shadowBlur  = seg.rarity === 'legendary' ? 10 : 6;
+        }
+        /* скруглённый прямоугольник */
+        const rx = stripX, ry = -stripH / 2, rw = stripW, rh = stripH, rr = 2;
         ctx.beginPath();
-        ctx.moveTo(bx + br, by);
-        ctx.lineTo(bx + bw - br, by);
-        ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
-        ctx.lineTo(bx + bw, by + bh - br);
-        ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
-        ctx.lineTo(bx + br, by + bh);
-        ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
-        ctx.lineTo(bx, by + br);
-        ctx.quadraticCurveTo(bx, by, bx + br, by);
+        ctx.moveTo(rx + rr, ry);
+        ctx.lineTo(rx + rw - rr, ry);
+        ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+        ctx.lineTo(rx + rw, ry + rh - rr);
+        ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+        ctx.lineTo(rx + rr, ry + rh);
+        ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rr);
+        ctx.lineTo(rx, ry + rr);
+        ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
         ctx.closePath();
         ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur  = 0;
-        ctx.shadowColor = 'transparent';
+        ctx.globalAlpha  = 1;
+        ctx.shadowBlur   = 0;
+        ctx.shadowColor  = 'transparent';
       }
 
-      const maxW    = R * 0.44;
-      const fSize   = Math.max(6.5, Math.min(R * 0.062, 11.5));
-      ctx.font      = `700 ${fSize}px 'Segoe UI','Inter',system-ui,sans-serif`;
-      ctx.fillStyle = rc.textColor;
-      ctx.textAlign = 'right';
+      /* ── Текст названия ─────────────────────────────────── */
+      /* Во время вращения: меньший шрифт, без glow — быстрее */
+      const maxW  = R * (isSpinning ? 0.76 : 0.78);
+      const fSize = Math.max(6, Math.min(R * (isSpinning ? 0.058 : 0.064), isSpinning ? 10 : 12));
+      ctx.font         = `${isSpinning ? '600' : '700'} ${fSize}px 'Segoe UI','Inter',system-ui,sans-serif`;
+      ctx.fillStyle    = rc.textColor;
+      ctx.textAlign    = 'right';
       ctx.textBaseline = 'middle';
 
-      if (seg.rarity !== 'common') {
+      if (!isSpinning && seg.rarity !== 'common') {
         ctx.shadowColor = rc.glowColor;
-        ctx.shadowBlur  = seg.rarity === 'legendary' ? 7 : 4;
+        ctx.shadowBlur  = seg.rarity === 'legendary' ? 8 : 4;
       }
 
       let label = seg.name;
@@ -643,7 +641,7 @@ const WheelRenderer = {
       }
       if (label !== seg.name) label = label.trimEnd() + '…';
 
-      ctx.fillText(label, R * 0.90, 0);
+      ctx.fillText(label, R * 0.88, 0);
       ctx.shadowBlur = 0;
       ctx.restore();
     }
@@ -898,13 +896,35 @@ const ResultModal = {
     document.getElementById('resultTypeLabel').textContent =
       type === 'challenge' ? 'Усложнение выпало!' : 'Оружие выпало!';
 
-    const img = document.getElementById('resultImg');
+    const imgWrap = document.getElementById('resultImgWrap');
+    const img     = document.getElementById('resultImg');
     if (item.image) {
       img.src           = item.image;
-      img.style.display = '';
-      img.onerror       = () => { img.style.display = 'none'; };
+      imgWrap.style.display = '';
+      img.style.display     = '';
+      img.onerror = () => {
+        /* PNG нет — показываем эмодзи-заглушку редкости */
+        img.style.display = 'none';
+        const emo = { legendary: '⭐', rare: '💎', common: '🔫' };
+        let fb = imgWrap.querySelector('.result-img-fallback');
+        if (!fb) {
+          fb = document.createElement('div');
+          fb.className = 'result-img-fallback';
+          imgWrap.appendChild(fb);
+        }
+        fb.textContent = emo[rarity] || '🔫';
+      };
     } else {
-      img.style.display = 'none';
+      /* Усложнение — нет картинки, показываем иконку типа */
+      imgWrap.style.display = '';
+      img.style.display     = 'none';
+      let fb = imgWrap.querySelector('.result-img-fallback');
+      if (!fb) {
+        fb = document.createElement('div');
+        fb.className = 'result-img-fallback';
+        imgWrap.appendChild(fb);
+      }
+      fb.textContent = rarity === 'legendary' ? '☠️' : rarity === 'rare' ? '⚡' : '🎯';
     }
 
     const nameEl       = document.getElementById('resultName');
@@ -1083,6 +1103,9 @@ class WheelController {
 
     AudioManager.startSpinLoop();
 
+    /* Включаем режим вращения — упрощённая отрисовка для 60fps */
+    this.renderer.spinning = true;
+
     this.engine.spin({
       winIndex: index,
       total:    this.opts.segments.length,
@@ -1092,6 +1115,8 @@ class WheelController {
   }
 
   _onDone(finalAngle, item, index) {
+    /* Выключаем режим вращения — возвращаем полное качество */
+    this.renderer.spinning = false;
     AudioManager.stopSpinLoop();
 
     /* Верификация */
