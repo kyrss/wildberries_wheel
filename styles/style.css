@@ -1,0 +1,1047 @@
+/* ============================================================
+   WILDBERRIES PUBG — Fortune Wheel
+   Mobile-first, iOS-safe, Premium Dark UI
+   ============================================================ */
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:            #08080d;
+  --bg-panel:      #0d0d16;
+  --bg-glass:      rgba(255,255,255,0.032);
+  --border:        rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.12);
+
+  /* Редкости */
+  --clr-common:  #8b92a5;
+  --clr-rare:    #9d7fe8;
+  --clr-leg:     #d4a832;
+
+  /* WB brand */
+  --wb:          #8b2252;
+  --wb-mid:      #a02868;
+  --wb-soft:     rgba(160,40,104,0.28);
+
+  --text:        #d8d9e8;
+  --muted:       #50546a;
+
+  --r-lg: 18px;
+  --r-md: 12px;
+  --r-sm: 8px;
+
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top:    env(safe-area-inset-top, 0px);
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', 'Inter', -apple-system, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* Film grain */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.022'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+/* Radial bg accents */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 30% at 50% 0%, rgba(80,48,160,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 20% at 5%  100%, rgba(139,34,82,0.05) 0%, transparent 60%);
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#app {
+  position: relative; z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-top: var(--safe-top);
+}
+
+/* ============================================================
+   HEADER
+   Логотип строго по центру. Без glow. Без анимаций на логотипе.
+   ============================================================ */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,13,0.93);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.logo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Логотип SVG — без glow, без анимаций, без text-shadow */
+.logo-img {
+  width: min(70vw, 340px);
+  height: auto;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Текстовый fallback если SVG не найден */
+.logo-fallback {
+  font-size: clamp(1.4rem, 5.5vw, 2.1rem);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #e8e4f0;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.logo-subtitle {
+  font-size: clamp(0.48rem, 1.7vw, 0.60rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+/* ---------- Tabs ---------- */
+.tabs {
+  display: flex;
+  width: 100%;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 9px 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: clamp(0.68rem, 2.5vw, 0.8rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  color: var(--text);
+  border-bottom-color: var(--wb-mid);
+}
+
+.tab-btn:active { opacity: 0.7; }
+
+/* Звук кнопка */
+.header-actions {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  display: flex;
+  gap: 6px;
+}
+
+#soundToggle {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.18s;
+}
+#soundToggle:active { transform: scale(0.9); }
+#soundToggle[data-on="0"] { opacity: 0.45; }
+
+/* ============================================================
+   MAIN
+   ============================================================ */
+main {
+  flex: 1;
+  position: relative; z-index: 1;
+  padding-bottom: calc(88px + var(--safe-bottom));
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============================================================
+   ROULETTE PANELS
+   ============================================================ */
+.roulette-panel-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 0;
+}
+
+/* ---------- Колесо ---------- */
+.wheel-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+/* Указатель */
+.pointer {
+  position: relative; z-index: 20;
+  width: 0; height: 0;
+  border-left:  13px solid transparent;
+  border-right: 13px solid transparent;
+  border-top:   28px solid #d4a832;
+  filter: drop-shadow(0 0 6px rgba(212,168,50,0.6));
+  margin-bottom: -3px;
+  flex-shrink: 0;
+  animation: ptrPulse 3.5s ease-in-out infinite;
+}
+
+@keyframes ptrPulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(212,168,50,0.55)); }
+  50%       { filter: drop-shadow(0 0 14px rgba(212,168,50,0.85)) drop-shadow(0 0 26px rgba(212,168,50,0.3)); }
+}
+
+/* Canvas-контейнер — адаптивный, 88% экрана на мобиле */
+.wheel-canvas-wrap {
+  position: relative;
+  width:  min(calc(100vw - 20px), 460px);
+  height: min(calc(100vw - 20px), 460px);
+  flex-shrink: 0;
+}
+
+.wheel-canvas-wrap canvas {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Кольцо-ободок */
+.wheel-ring {
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 2px solid rgba(255,255,255,0.05);
+  box-shadow:
+    0 0 0 2px rgba(80,52,160,0.1),
+    0 0 20px rgba(80,52,160,0.1),
+    inset 0 0 14px rgba(0,0,0,0.5);
+  transition: box-shadow 0.35s, border-color 0.35s;
+}
+.wheel-ring.legendary {
+  border-color: rgba(212,168,50,0.38);
+  box-shadow: 0 0 0 2px rgba(212,168,50,0.38), 0 0 44px rgba(212,168,50,0.4), inset 0 0 14px rgba(0,0,0,0.5);
+}
+.wheel-ring.rare {
+  border-color: rgba(157,127,232,0.38);
+  box-shadow: 0 0 0 2px rgba(157,127,232,0.38), 0 0 38px rgba(157,127,232,0.38), inset 0 0 14px rgba(0,0,0,0.5);
+}
+.wheel-ring.common {
+  border-color: rgba(139,146,165,0.28);
+  box-shadow: 0 0 0 2px rgba(139,146,165,0.22), 0 0 20px rgba(139,146,165,0.18), inset 0 0 14px rgba(0,0,0,0.5);
+}
+
+/* Хаб */
+.wheel-hub {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1e1e2e 0%, #0a0a12 100%);
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: 0 0 14px rgba(0,0,0,0.75);
+  z-index: 10; pointer-events: none;
+}
+
+/* Фоновое свечение под колесом */
+.wheel-bg-glow {
+  position: absolute; inset: -8%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(80,52,160,0.05) 0%, transparent 68%);
+  pointer-events: none;
+  animation: bgGlowPulse 5s ease-in-out infinite;
+}
+@keyframes bgGlowPulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+/* ---------- Блок инфо ---------- */
+.roulette-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Стеклянная панель */
+.glass-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+}
+
+.panel-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+/* Шансы */
+.odds-list { display: flex; flex-direction: column; gap: 6px; }
+.odds-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.odds-left { display: flex; align-items: center; gap: 7px; }
+.odds-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.odds-dot.common    { background: #4a5060; }
+.odds-dot.rare      { background: #5534a8; box-shadow: 0 0 4px rgba(85,52,168,0.7); }
+.odds-dot.legendary { background: #c89820; box-shadow: 0 0 4px rgba(200,152,32,0.7); }
+
+/* Статы */
+.stats-row { display: flex; gap: 0; }
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 4px;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-val { font-size: 1.1rem; font-weight: 900; color: var(--text); }
+.stat-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Мини-результат */
+.mini-result { display: flex; align-items: center; gap: 10px; }
+.mini-img { width: 36px; height: 36px; flex-shrink: 0; }
+.mini-img img { width: 100%; height: 100%; object-fit: contain; }
+.mini-name   { font-size: 0.8rem; font-weight: 800; color: var(--text); }
+.mini-rarity { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+/* Бейдж */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 3px 12px;
+  font-size: 0.66rem;
+  color: var(--muted);
+}
+.count-badge strong { color: var(--text); font-weight: 800; }
+
+/* ============================================================
+   CURRENT CHALLENGE BLOCK
+   ============================================================ */
+#currentChallengeBlock {
+  margin: 0 14px;
+  background: linear-gradient(135deg, rgba(80,52,160,0.12) 0%, rgba(139,34,82,0.08) 100%);
+  border: 1px solid rgba(157,127,232,0.2);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+}
+
+.cc-title {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.cc-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.cc-row:last-child { margin-bottom: 0; }
+
+.cc-tag {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.cc-val {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+/* ============================================================
+   STICKY SPIN BUTTON
+   ============================================================ */
+.spin-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  padding: 10px 16px calc(10px + var(--safe-bottom));
+  background: rgba(8,8,13,0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: none;
+}
+
+.spin-footer.visible { display: block; }
+
+.spin-btn {
+  position: relative;
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--wb-mid) 0%, var(--wb) 55%, #4e0e28 100%);
+  color: #f5eaf0;
+  box-shadow:
+    0 0 20px rgba(139,34,82,0.3),
+    0 4px 16px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.spin-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+@keyframes btnShine {
+  0%   { transform: translateX(-120%) skewX(-18deg); }
+  100% { transform: translateX(280%)  skewX(-18deg); }
+}
+.spin-btn .btn-shine {
+  position: absolute; top: 0; bottom: 0; left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  animation: btnShine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.spin-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(139,34,82,0.25), 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.spin-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   RESULT OVERLAY
+   ============================================================ */
+#resultOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  /* display управляется через JS (.style.display = 'flex') */
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 0;
+  pointer-events: none;
+  /* transition только opacity — display меняется до анимации */
+  transition: opacity 0.28s;
+  padding: 20px;
+}
+#resultOverlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.result-card {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  /* Компактные отступы — акцент на изображении */
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Меньший gap — нет лишних дыр между элементами */
+  gap: 6px;
+  width: min(88vw, 360px);
+  text-align: center;
+  transform: scale(0.75) translateY(30px);
+  transition: transform 0.35s cubic-bezier(0.34,1.45,0.64,1);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+#resultOverlay.visible .result-card {
+  transform: scale(1) translateY(0);
+}
+
+.rarity-card-legendary {
+  border-color: rgba(212,168,50,0.4) !important;
+  box-shadow: 0 8px 50px rgba(212,168,50,0.25), 0 0 0 1px rgba(212,168,50,0.15) !important;
+}
+.rarity-card-rare {
+  border-color: rgba(157,127,232,0.38) !important;
+  box-shadow: 0 8px 36px rgba(157,127,232,0.22) !important;
+}
+
+.result-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 50px;
+}
+.rarity-common    { background: rgba(74,80,96,0.22);   color: var(--clr-common); border: 1px solid rgba(74,80,96,0.4); }
+.rarity-rare      { background: rgba(85,52,168,0.2);   color: var(--clr-rare);   border: 1px solid rgba(85,52,168,0.42); }
+.rarity-legendary { background: rgba(138,94,10,0.2);   color: var(--clr-leg);    border: 1px solid rgba(212,168,50,0.42); box-shadow: 0 0 12px rgba(212,168,50,0.18); }
+
+.result-type-label {
+  font-size: 0.64rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: -4px;
+}
+
+/* ── Изображение оружия — 60% ширины карточки, highlight-стиль ── */
+.result-img-wrap {
+  position: relative;
+  /* 60% ширины карточки, ограничено снизу */
+  width: 60%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+}
+
+/* Радиальное фоновое свечение — большой мягкий ореол под картинкой */
+.result-img-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(28px);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+/* Активируем glow сразу при появлении карточки */
+#resultOverlay.visible .result-img-wrap::before { opacity: 1; }
+
+.rarity-card-legendary .result-img-wrap::before {
+  background: radial-gradient(circle,
+    rgba(212,168,50,0.60) 0%,
+    rgba(212,168,50,0.20) 45%,
+    transparent 70%
+  );
+}
+.rarity-card-rare .result-img-wrap::before {
+  background: radial-gradient(circle,
+    rgba(157,127,232,0.55) 0%,
+    rgba(157,127,232,0.18) 45%,
+    transparent 70%
+  );
+}
+.rarity-card-common .result-img-wrap::before {
+  background: radial-gradient(circle,
+    rgba(139,146,165,0.28) 0%,
+    rgba(139,146,165,0.08) 50%,
+    transparent 70%
+  );
+}
+
+.result-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.85));
+  /* Лёгкое всплытие при появлении */
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.34,1.45,0.64,1);
+}
+#resultOverlay.visible .result-img-wrap img {
+  transform: translateY(-4px);
+}
+
+/* Эмодзи-заглушка когда PNG нет */
+.result-img-fallback {
+  font-size: clamp(3.5rem, 18vw, 6rem);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,0.6));
+  user-select: none;
+  /* Всплытие */
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.34,1.45,0.64,1);
+}
+#resultOverlay.visible .result-img-fallback {
+  transform: translateY(-4px);
+}
+
+.result-name {
+  font-size: clamp(1rem, 5vw, 1.35rem);
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  /* Убираем лишний зазор над именем */
+  margin-top: 0;
+}
+
+.rarity-text-legendary {
+  background: linear-gradient(135deg, #c89820, #e8c04a, #d4a832, #f0d060, #c89820);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2.2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(212,168,50,0.45));
+}
+.rarity-text-rare {
+  background: linear-gradient(135deg, #7c50c8, #b89ef0, #9d7fe8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.rarity-text-common { color: var(--text); }
+
+@keyframes shimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.result-close-btn {
+  margin-top: 2px;
+  padding: 10px 32px;
+  border-radius: 50px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.result-close-btn:active { background: rgba(255,255,255,0.1); }
+
+/* ============================================================
+   CATALOG
+   ============================================================ */
+#catalog-panel {
+  padding: 12px 14px;
+}
+
+.catalog-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.catalog-type-row { display: flex; gap: 6px; }
+.catalog-type-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.catalog-type-btn.active {
+  background: rgba(139,34,82,0.18);
+  border-color: rgba(139,34,82,0.4);
+  color: var(--text);
+}
+
+.catalog-search {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: 0.88rem;
+  outline: none;
+  -webkit-appearance: none;
+  transition: border-color 0.18s;
+}
+.catalog-search::placeholder { color: var(--muted); }
+.catalog-search:focus { border-color: rgba(139,34,82,0.45); }
+
+.filter-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-btn {
+  padding: 7px 14px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  min-height: 34px;
+}
+.filter-btn:active { opacity: 0.7; }
+.filter-btn.f-active                         { background: rgba(255,255,255,0.07); color: var(--text); border-color: rgba(255,255,255,0.16); }
+.filter-btn.f-active[data-filter="legendary"]{ background: rgba(138,94,10,0.18);  color: var(--clr-leg);    border-color: rgba(212,168,50,0.4); }
+.filter-btn.f-active[data-filter="rare"]     { background: rgba(85,52,168,0.18);  color: var(--clr-rare);   border-color: rgba(85,52,168,0.42); }
+.filter-btn.f-active[data-filter="common"]   { background: rgba(74,80,96,0.18);   color: var(--clr-common); border-color: rgba(74,80,96,0.42); }
+
+.catalog-count {
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.weapon-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.weapon-card:active { transform: scale(0.97); }
+
+.weapon-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+.rarity-card-common::before    { background: linear-gradient(90deg, transparent, #4a5060, transparent); }
+.rarity-card-rare::before      { background: linear-gradient(90deg, transparent, #5534a8, transparent); }
+.rarity-card-legendary::before { background: linear-gradient(90deg, transparent, #c89820, transparent); }
+
+.rarity-card-legendary { border-color: rgba(212,168,50,0.18); }
+.rarity-card-rare      { border-color: rgba(85,52,168,0.2); }
+
+.wcard-img { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+.wcard-img img { max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.no-img { font-size: 2rem; opacity: 0.3; }
+
+/* ============================================================
+   ICON-WRAP — контейнер иконки с glow по редкости
+   Glow работает независимо от наличия PNG.
+   ============================================================ */
+.icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  flex-shrink: 0;
+  position: relative;
+  transition: box-shadow 0.3s;
+}
+
+.icon-wrap img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: brightness(1.05) contrast(1.02);
+  position: relative;
+  z-index: 1;
+}
+
+/* Псевдоэлемент ::after — glow слой, не зависит от PNG */
+/* АУДИТ-FIX: opacity:1 сразу — не ждём hover/transition на iOS */
+.icon-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 18px;
+  pointer-events: none;
+  filter: blur(10px);
+  opacity: 1;
+}
+
+/* Common */
+.icon-wrap.rarity-common {
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.38),
+    0 0 10px rgba(139,146,165,0.08);
+  background: rgba(74,80,96,0.10);
+}
+.icon-wrap.rarity-common::after {
+  background: radial-gradient(circle, rgba(139,146,165,0.12), transparent 60%);
+  opacity: 1;
+}
+
+/* Rare */
+.icon-wrap.rarity-rare {
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.38),
+    0 0 18px rgba(157,127,232,0.28),
+    0 0  6px rgba(157,127,232,0.18);
+  background: rgba(85,52,168,0.12);
+}
+.icon-wrap.rarity-rare::after {
+  background: radial-gradient(circle, rgba(166,77,255,0.35), transparent 60%);
+  opacity: 1;
+}
+
+/* Legendary — золотое свечение + пульсация */
+.icon-wrap.rarity-legendary {
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.38),
+    0 0 22px rgba(212,168,50,0.32),
+    0 0  8px rgba(212,168,50,0.22);
+  background: rgba(138,94,10,0.14);
+  animation: legendaryIconPulse 3s ease-in-out infinite;
+}
+.icon-wrap.rarity-legendary::after {
+  background: radial-gradient(circle, rgba(255,195,74,0.42), transparent 60%);
+  animation: legendaryAfterPulse 3s ease-in-out infinite;
+}
+
+@keyframes legendaryIconPulse {
+  0%, 100% {
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.38),
+      0 0 22px rgba(212,168,50,0.28),
+      0 0  8px rgba(212,168,50,0.18);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(0,0,0,0.42),
+      0 0 32px rgba(212,168,50,0.44),
+      0 0 12px rgba(212,168,50,0.30);
+  }
+}
+
+@keyframes legendaryAfterPulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+
+.wcard-name {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+  color: var(--text);
+}
+.wcard-rarity {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   LEGENDARY SCENE OVERLAY
+   FIX-DRAMA: затемнение + золотой radial glow из центра
+   Элемент создаётся JS-ом динамически (#legendarySceneOverlay)
+   ============================================================ */
+#legendarySceneOverlay {
+  /* Базовые стили — JS дополняет через style.cssText */
+  position: fixed;
+  inset: 0;
+  z-index: 9995;
+  pointer-events: none;
+  transition: opacity 0.3s !important;
+}
+
+/* ============================================================
+   FLASH / PARTICLES
+   ============================================================ */
+#flashOverlay {
+  position: fixed; inset: 0; z-index: 9997;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.08s;
+}
+
+.particles-canvas {
+  position: fixed; inset: 0; z-index: 9996;
+  pointer-events: none;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+/* ============================================================
+   DESKTOP / 16:9
+   ============================================================ */
+@media (min-width: 700px) and (min-aspect-ratio: 14/10) {
+  main { padding-bottom: 0; }
+
+  .roulette-panel-inner {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 32px;
+    padding: 16px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .wheel-wrap { width: auto; flex-shrink: 0; }
+
+  .wheel-canvas-wrap {
+    width:  min(56vw, 56vh, 580px);
+    height: min(56vw, 56vh, 580px);
+  }
+
+  .roulette-info {
+    width: 230px;
+    flex-shrink: 0;
+    padding-top: 40px;
+  }
+
+  .spin-footer {
+    position: static;
+    padding: 0;
+    background: none;
+    backdrop-filter: none;
+    border-top: none;
+    display: block !important;
+  }
+
+  .spin-btn {
+    padding: 14px 20px;
+    font-size: 0.95rem;
+  }
+
+  #currentChallengeBlock {
+    margin: 8px 24px;
+    max-width: calc(1100px - 48px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .wheel-canvas-wrap {
+    width:  min(60vh, 640px);
+    height: min(60vh, 640px);
+  }
+  .roulette-info { width: 260px; }
+}
+
+/* ============================================================
+   МАЛЕНЬКИЕ ТЕЛЕФОНЫ (< 380px)
+   ============================================================ */
+@media (max-width: 380px) {
+  .wheel-canvas-wrap {
+    width:  calc(100vw - 16px);
+    height: calc(100vw - 16px);
+  }
+  .logo-text { font-size: 1.3rem; letter-spacing: 0.16em; }
+  .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); }
+  .roulette-panel-inner { padding: 8px 8px 0; gap: 8px; }
+}
